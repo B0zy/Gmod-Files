@@ -1,5 +1,3 @@
--- Assuming you have the OMatrix library loaded
-
 local sin, cos = math.sin, math.cos
 
 local torusRadius = 50
