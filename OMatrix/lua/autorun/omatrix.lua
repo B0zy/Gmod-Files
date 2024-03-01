@@ -17,7 +17,7 @@ function OMatrix:new(tbl)
         matrix[#matrix+1] = v
     end
 
-    setmetatable(matrix, OMatrix)
+    return setmetatable(matrix, OMatrix)
 end
 
 

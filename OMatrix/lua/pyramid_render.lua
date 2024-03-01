@@ -1,14 +1,10 @@
 local sin, cos = math.sin, math.cos
 
-local cube = {
-    {-1,-1,-1},
-    {1,-1,-1},
-    {1,1,-1},
-    {-1,1,-1},
-    {-1,-1,1},
-    {1,-1,1},
-    {1,1,1},
-    {-1,1,1},
+local pyramid = {
+    {0, 0, -1},
+    {1, 0, 1},
+    {-1, 0, 1},
+    {0, 1, 0},
 }
 
 local BLACK = Color(0, 0, 0) -- background
@@ -20,12 +16,12 @@ SCREENWIDTH, SCREENHEIGHT = 600, 600
 local mainScreen = vgui.Create("DFrame")
 mainScreen:SetSize(SCREENWIDTH, SCREENHEIGHT)
 mainScreen:Center()
-mainScreen:SetTitle("3D Cube")
+mainScreen:SetTitle("3D Pyramid")
 mainScreen:MakePopup()
 
 local size = 100 -- simple 2D object scaling
-local moveX = 200
-local moveY = 200
+local moveX = 300
+local moveY = 300
 local distance = 2
 
 local function DrawPoint(x, y)
@@ -42,22 +38,21 @@ mainScreen.Paint = function(self, w, h)
     draw.RoundedBox(0, 0, 0, w, h, BLACK)
     local IV = CurTime()
 
-    for i = 1, #cube do
+    for i = 1, #pyramid do
 
         local rotationMatrixX = OMatrix({{1, 0, 0}, {0, cos(IV), -sin(IV)}, {0, sin(IV), cos(IV)}})
         local rotationMatrixY = OMatrix({{cos(IV), 0, sin(IV)}, {0,1,0}, {-sin(IV), 0, cos(IV)}})
         local rotationMatrixZ = OMatrix({{cos(IV), -sin(IV), 0}, {sin(IV), cos(IV), 0}, {0,0,1}})
 
-        local pointData = cube[i]
-        local rotatedMatrix = OMatrix({pointData}):Mul(rotationMatrixY) -- you must rotate it before projection to get correct outputs.
+        local pointData = pyramid[i]
+        local rotatedMatrix = OMatrix({pointData}):Mul(rotationMatrixY)
         rotatedMatrix = rotatedMatrix:Mul(rotationMatrixX)
         rotatedMatrix = rotatedMatrix:Mul(rotationMatrixZ)
-
 
         local z = 1/(distance - rotatedMatrix:get(1,3))
         local projectionMatrix = OMatrix({{1,0,0}, {0,1,0}, {0,0,0}})
 
-        local projectedMatrix = rotatedMatrix:Mul(projectionMatrix) -- once the points are correctly rotated you can project them into a 2d screen.
+        local projectedMatrix = rotatedMatrix:Mul(projectionMatrix)
         local x = projectedMatrix:get(1,1) * size + moveX
         local y = projectedMatrix:get(1,2) * size + moveY
         projectedPoints[i] = {x, y}
@@ -67,17 +62,10 @@ mainScreen.Paint = function(self, w, h)
 
     connect(1, 2, projectedPoints)
     connect(2, 3, projectedPoints)
+    connect(3, 1, projectedPoints)
+
+    connect(1, 4, projectedPoints)
+    connect(2, 4, projectedPoints)
     connect(3, 4, projectedPoints)
-    connect(4, 1, projectedPoints)
-
-    connect(5, 6, projectedPoints)
-    connect(6, 7, projectedPoints)
-    connect(7, 8, projectedPoints)
-    connect(8, 5, projectedPoints)
-
-    connect(1, 5, projectedPoints)
-    connect(2, 6, projectedPoints)
-    connect(3, 7, projectedPoints)
-    connect(4, 8, projectedPoints)
     
 end
